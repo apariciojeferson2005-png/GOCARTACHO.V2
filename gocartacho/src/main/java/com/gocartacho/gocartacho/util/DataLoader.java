@@ -276,8 +276,17 @@ public class DataLoader implements CommandLineRunner {
 
     private void inicializarPlanComercios() {
         if (planComercioRepository.count() > 0) {
-            log.info("Ya existen relaciones plan-comercio en la base de datos. Saltando inicialización.");
-            return;
+            log.info("Verificando consistencia de relaciones plan-comercio en la base de datos...");
+            long planesValidos = planComercioRepository.findAll().stream()
+                .filter(pc -> pc.getPlanId() != null && planRepository.existsById(pc.getPlanId()))
+                .count();
+            if (planesValidos == 0) {
+                log.info("Se encontraron relaciones huérfanas (sin planes asociados). Limpiando para regenerar...");
+                planComercioRepository.deleteAll();
+            } else {
+                log.info("Las relaciones plan-comercio son consistentes. Saltando inicialización.");
+                return;
+            }
         }
         log.info("Cargando relaciones plan-comercio...");
 
