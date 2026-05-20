@@ -111,7 +111,34 @@ public class ComercioServiceImpl implements ComercioService {
                     comercio.getLatitud().doubleValue()));
         }
 
+        // Validar que las coordenadas correspondan a la zona seleccionada (Máximo 3 KM de distancia)
+        if (comercio.getZonaId() != null && comercio.getLatitud() != null && comercio.getLongitud() != null) {
+            zonaRepository.findById(comercio.getZonaId()).ifPresent(zona -> {
+                double dist = calcularDistancia(
+                    comercio.getLatitud().doubleValue(), comercio.getLongitud().doubleValue(),
+                    zona.getLatitud().doubleValue(), zona.getLongitud().doubleValue()
+                );
+                if (dist > 3.0) { // 3 KM de tolerancia
+                    throw new IllegalArgumentException("Las coordenadas ingresadas (" + dist + " km de distancia) no coinciden con la zona seleccionada ('" + zona.getNombre() + "'). Por favor, verifica el marcador en el mapa.");
+                }
+            });
+        }
+
         return comercioRepository.save(comercio);
+    }
+
+    /**
+     * Fórmula de Haversine para calcular distancia en línea recta en Kilómetros
+     */
+    private double calcularDistancia(double lat1, double lon1, double lat2, double lon2) {
+        final int R = 6371;
+        double latDistance = Math.toRadians(lat2 - lat1);
+        double lonDistance = Math.toRadians(lon2 - lon1);
+        double a = Math.sin(latDistance / 2) * Math.sin(latDistance / 2)
+                + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
+                        * Math.sin(lonDistance / 2) * Math.sin(lonDistance / 2);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return R * c;
     }
 
     @Override
