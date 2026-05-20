@@ -1,0 +1,14 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Spring Boot-GocartachoApplication<gocartacho>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.gocartacho.gocartacho.GocartachoApplication",
+            "projectName": "gocartacho",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        }
+    ]
+}
