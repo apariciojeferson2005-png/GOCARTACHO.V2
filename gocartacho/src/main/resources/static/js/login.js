@@ -45,7 +45,7 @@ document.getElementById('loginForm').addEventListener('submit', function (e) {
             if (redirectUrl && redirectUrl !== '/login') {
                 globalThis.location.href = redirectUrl;
             } else {
-                globalThis.location.href = rol === 'ADMIN' ? '/dashboard' : '/';
+                globalThis.location.href = (rol === 'ADMIN' || rol === 'SUPER_ADMIN') ? '/dashboard' : '/';
             }
         })
         .catch(error => {

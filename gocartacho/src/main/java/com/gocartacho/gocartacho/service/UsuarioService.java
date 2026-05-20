@@ -25,6 +25,9 @@ public interface UsuarioService {
 
     Optional<Usuario> obtenerUsuarioPorId(String id);
 
+    /** Obtiene todos los usuarios con rol de administrador o super administrador */
+    java.util.List<Usuario> obtenerAdministradores();
+
     /** Actualización completa de un usuario (solo ADMIN). Permite cambiar rol. */
     Usuario actualizarUsuario(Usuario usuario) throws IllegalArgumentException;
 

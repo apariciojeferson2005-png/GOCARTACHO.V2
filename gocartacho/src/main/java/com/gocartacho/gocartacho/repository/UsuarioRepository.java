@@ -26,4 +26,7 @@ public interface UsuarioRepository extends MongoRepository<Usuario, String> {
     // Búsqueda para el panel de administración con soporte para paginación.
     Page<Usuario> findByNombreContainingIgnoreCaseOrApellidoContainingIgnoreCaseOrEmailContainingIgnoreCaseOrUsernameContainingIgnoreCase(
             String nombre, String apellido, String email, String username, Pageable pageable);
+
+    // Encuentra usuarios por una lista de roles
+    java.util.List<Usuario> findByRolIn(java.util.List<com.gocartacho.gocartacho.model.RolUsuario> roles);
 }

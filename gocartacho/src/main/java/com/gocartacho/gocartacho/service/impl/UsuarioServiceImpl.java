@@ -136,6 +136,11 @@ public class UsuarioServiceImpl implements UsuarioService {
     }
 
     @Override
+    public java.util.List<Usuario> obtenerAdministradores() {
+        return usuarioRepository.findByRolIn(java.util.List.of(RolUsuario.ADMIN, RolUsuario.SUPER_ADMIN));
+    }
+
+    @Override
     public long contarUsuarios() {
         return usuarioRepository.count();
     }

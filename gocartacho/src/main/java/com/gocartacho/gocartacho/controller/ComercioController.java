@@ -105,6 +105,16 @@ public class ComercioController {
         }
 
         Comercio guardado = comercioService.guardarComercio(comercio);
+
+        // Notificar a todos los administradores que hay un nuevo comercio pendiente
+        java.util.List<Usuario> administradores = usuarioService.obtenerAdministradores();
+        String titulo = "Nueva Solicitud de Comercio: " + guardado.getNombre();
+        String mensaje = "El usuario " + (authentication != null ? authentication.getName() : "desconocido") +
+                " ha registrado el negocio '" + guardado.getNombre() + "' y está en estado PENDIENTE de aprobación.";
+        for (Usuario admin : administradores) {
+            notificacionService.enviarNotificacion(admin, titulo, mensaje);
+        }
+
         return comercioMapper.toDto(guardado);
     }
 
