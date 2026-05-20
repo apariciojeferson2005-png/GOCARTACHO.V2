@@ -12,6 +12,8 @@ public interface PlanService {
     
     Optional<Plan> obtenerPlanPorId(String planId);
     
+    Plan crearPlan(com.gocartacho.gocartacho.dto.CrearPlanDTO request);
+
     Map<String, Integer> calcularAfluenciaParaPlanes(List<String> planesIds);
     
     /**

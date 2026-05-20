@@ -53,6 +53,34 @@ public class PlanServiceImpl implements PlanService {
     }
 
     @Override
+    @Transactional
+    public Plan crearPlan(com.gocartacho.gocartacho.dto.CrearPlanDTO request) {
+        if (request == null) {
+            throw new IllegalArgumentException("El request no puede ser nulo");
+        }
+        
+        Plan plan = new Plan();
+        plan.setNombrePlan(request.getNombrePlan());
+        plan.setDescripcion(request.getDescripcion());
+        plan.setPromedioCalificacion(0.0);
+        
+        Plan savedPlan = planRepository.save(plan);
+        
+        if (request.getParadas() != null) {
+            int orden = 1;
+            for (com.gocartacho.gocartacho.dto.ParadaPlanDTO parada : request.getParadas()) {
+                PlanComercio pc = new PlanComercio();
+                pc.setPlanId(savedPlan.getPlanId());
+                pc.setComercioId(parada.getComercioId());
+                pc.setOrden(orden++);
+                pc.setRecomendacion(parada.getRecomendacion());
+                planComercioRepository.save(pc);
+            }
+        }
+        return savedPlan;
+    }
+
+    @Override
     public Map<String, Integer> calcularAfluenciaParaPlanes(List<String> planesIds) {
         if (planesIds == null || planesIds.isEmpty()) {
             return Collections.emptyMap();

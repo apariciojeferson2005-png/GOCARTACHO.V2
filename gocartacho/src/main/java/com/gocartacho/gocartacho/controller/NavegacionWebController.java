@@ -174,6 +174,12 @@ public class NavegacionWebController {
         return "admin/negocios";
     }
 
+    @GetMapping("/dashboard/planes")
+    public String adminPlanes(Model model) {
+        model.addAttribute(ATTR_PLANES, planService.obtenerTodasLasPlanes());
+        return "admin/planes";
+    }
+
     @GetMapping("/dashboard/promociones")
     public String adminPromociones(Model model) {
         return "admin/promociones";

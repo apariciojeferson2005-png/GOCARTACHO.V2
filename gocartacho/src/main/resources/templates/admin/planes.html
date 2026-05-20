@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{admin/layout-admin :: layout-admin(
+    pageTitle='Gestión de Planes',
+    activeSection='planes',
+    content=~{::section},
+    script=~{::script}
+)}">
+<body>
+    <section>
+        <div class="welcome-banner" style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <h1>Gestión de <span style="color:var(--accent2);">Planes</span></h1>
+                <p>Crea nuevos planes turísticos y administra los existentes.</p>
+            </div>
+            <button class="btn-primary" onclick="abrirModalCrearPlan()" style="padding: 12px 24px; font-size: 1rem; display: flex; align-items: center; gap: 8px;">
+                <i class="fas fa-plus"></i> Crear Nuevo Plan
+            </button>
+        </div>
+
+        <h3 style="color:var(--accent2); margin-bottom:20px; display:flex; align-items:center; gap:12px;">
+            <i class="fas fa-route"></i> Planes Activos
+        </h3>
+        
+        <div class="table-container">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nombre del Plan</th>
+                        <th>Descripción</th>
+                        <th>Calificación</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="plan : ${planes}">
+                        <td th:text="${#strings.abbreviate(plan.planId, 8)}"></td>
+                        <td th:text="${plan.nombrePlan}" style="font-weight: 600; color: var(--text);"></td>
+                        <td th:text="${#strings.abbreviate(plan.descripcion, 50)}"></td>
+                        <td>
+                            <span class="status-badge" style="background: rgba(255, 193, 7, 0.1); color: var(--gold);">
+                                <i class="fas fa-star"></i> <span th:text="${plan.promedioCalificacion}"></span>
+                            </span>
+                        </td>
+                        <td>
+                            <button class="btn-action" th:onclick="'verParadas(\'' + ${plan.planId} + '\')'" title="Ver Paradas">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(planes)}">
+                        <td colspan="5" style="text-align: center; padding: 30px; color: var(--muted);">
+                            No hay planes creados todavía. ¡Crea el primero!
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- MODAL CREAR PLAN -->
+        <div id="modal-crear-plan" class="modal-overlay hidden">
+            <div class="modal-content" style="max-width: 800px; width: 90%;">
+                <div style="display:flex; justify-content:space-between; margin-bottom:20px;">
+                    <h2 style="margin:0;"><i class="fas fa-route" style="color:var(--accent2);"></i> Crear Nuevo Plan</h2>
+                    <button onclick="cerrarModalCrearPlan()" style="background:none; border:none; color:var(--text); font-size:1.8rem; cursor:pointer; opacity:0.6;">&times;</button>
+                </div>
+                
+                <div id="plan-msg-error" class="status-badge badge-danger hidden" style="margin-bottom:20px; display:block;"></div>
+                
+                <form id="form-crear-plan" onsubmit="guardarNuevoPlan(event)">
+                    <div style="display: grid; grid-template-columns: 1fr; gap: 15px; margin-bottom: 20px;">
+                        <div class="search-form" style="flex-direction:column; margin:0;">
+                            <label style="font-weight:700; color:var(--muted); font-size:0.8rem; text-transform:uppercase;">Nombre del Plan</label>
+                            <input type="text" id="plan-nombre" placeholder="Ej: Plan Histórico Familiar" required>
+                        </div>
+                        <div class="search-form" style="flex-direction:column; margin:0;">
+                            <label style="font-weight:700; color:var(--muted); font-size:0.8rem; text-transform:uppercase;">Descripción General</label>
+                            <textarea id="plan-descripcion" placeholder="Describe brevemente de qué trata este recorrido..." style="width:100%; height:80px; background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 8px; padding: 12px; color: #fff; resize: none;" required></textarea>
+                        </div>
+                    </div>
+                    
+                    <h4 style="margin-bottom: 10px; color: var(--text); border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px;">Añadir Paradas (Comercios)</h4>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 2fr auto; gap: 10px; align-items: end; margin-bottom: 15px;">
+                        <div class="search-form" style="flex-direction:column; margin:0;">
+                            <label style="font-size:0.8rem;">Seleccionar Negocio</label>
+                            <select id="plan-select-negocio" style="background:rgba(255,255,255,0.9); border:1px solid var(--border); padding:10px; border-radius:8px; color:#333;">
+                                <option value="">Cargando negocios...</option>
+                            </select>
+                        </div>
+                        <div class="search-form" style="flex-direction:column; margin:0;">
+                            <label style="font-size:0.8rem;">¿Qué hacer aquí? (Recomendación)</label>
+                            <input type="text" id="plan-recomendacion" placeholder="Ej: Probar la especialidad de la casa...">
+                        </div>
+                        <button type="button" class="btn-action" onclick="agregarParada()" style="background: var(--accent2); color: white; padding: 10px 15px; border-radius: 8px; border: none; cursor: pointer; height: 42px;">
+                            <i class="fas fa-plus"></i> Añadir
+                        </button>
+                    </div>
+
+                    <div style="background: rgba(0,0,0,0.2); border-radius: 8px; padding: 10px; min-height: 100px; margin-bottom: 20px;">
+                        <ul id="lista-paradas" style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px;">
+                            <li id="paradas-empty" style="text-align: center; color: var(--muted); padding: 20px; font-size: 0.9rem;">
+                                No has añadido ninguna parada aún.
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div style="display:flex; justify-content: flex-end; gap:12px;">
+                        <button type="button" onclick="cerrarModalCrearPlan()" class="btn-action" style="background: rgba(255,255,255,0.1); color: #fff; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer;">Cancelar</button>
+                        <button type="submit" id="btn-guardar-plan" class="btn-primary" style="padding: 10px 24px; border-radius: 8px;">Guardar Plan</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+    </section>
+
+    <script>
+        let negociosDisponibles = [];
+        let paradasAgregadas = [];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Cargar negocios al inicio para tenerlos listos
+            fetch('/api/v1/comercios?size=100') // Pedimos bastantes para que salgan todos en la lista
+                .then(r => r.json())
+                .then(data => {
+                    negociosDisponibles = data.content || [];
+                    const select = document.getElementById('plan-select-negocio');
+                    select.innerHTML = '<option value="">-- Selecciona un negocio --</option>';
+                    negociosDisponibles.forEach(n => {
+                        const opt = document.createElement('option');
+                        opt.value = n.comercioId;
+                        opt.textContent = n.nombre + ' (' + (n.zonaNombre || 'Sin zona') + ')';
+                        select.appendChild(opt);
+                    });
+                })
+                .catch(err => console.error("Error cargando negocios:", err));
+        });
+
+        function abrirModalCrearPlan() {
+            document.getElementById('modal-crear-plan').classList.remove('hidden');
+            paradasAgregadas = [];
+            actualizarListaParadas();
+            document.getElementById('form-crear-plan').reset();
+            document.getElementById('plan-msg-error').classList.add('hidden');
+        }
+
+        function cerrarModalCrearPlan() {
+            document.getElementById('modal-crear-plan').classList.add('hidden');
+        }
+
+        function agregarParada() {
+            const select = document.getElementById('plan-select-negocio');
+            const recInput = document.getElementById('plan-recomendacion');
+            
+            const comercioId = select.value;
+            const recomendacion = recInput.value.trim();
+            const comercioNombre = select.options[select.selectedIndex]?.text;
+
+            if (!comercioId) {
+                alert("Debes seleccionar un negocio.");
+                return;
+            }
+            if (!recomendacion) {
+                alert("Debes escribir una recomendación o actividad para este negocio.");
+                return;
+            }
+
+            paradasAgregadas.push({ comercioId, comercioNombre, recomendacion });
+            
+            select.value = "";
+            recInput.value = "";
+            actualizarListaParadas();
+        }
+
+        function eliminarParada(index) {
+            paradasAgregadas.splice(index, 1);
+            actualizarListaParadas();
+        }
+
+        function actualizarListaParadas() {
+            const ul = document.getElementById('lista-paradas');
+            ul.innerHTML = '';
+            
+            if (paradasAgregadas.length === 0) {
+                ul.innerHTML = '<li id="paradas-empty" style="text-align: center; color: var(--muted); padding: 20px; font-size: 0.9rem;">No has añadido ninguna parada aún.</li>';
+                return;
+            }
+
+            paradasAgregadas.forEach((p, idx) => {
+                const li = document.createElement('li');
+                li.style = "display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.05); padding: 10px 15px; border-radius: 6px; border-left: 3px solid var(--accent2);";
+                
+                li.innerHTML = `
+                    <div>
+                        <strong style="color: #fff; font-size: 0.95rem;">${idx + 1}. ${p.comercioNombre}</strong><br>
+                        <span style="color: var(--muted); font-size: 0.85rem;"><i class="fas fa-comment-dots"></i> ${p.recomendacion}</span>
+                    </div>
+                    <button type="button" onclick="eliminarParada(${idx})" style="background: none; border: none; color: var(--red); cursor: pointer; padding: 5px;" title="Eliminar parada">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                `;
+                ul.appendChild(li);
+            });
+        }
+
+        async function guardarNuevoPlan(e) {
+            e.preventDefault();
+            
+            if (paradasAgregadas.length === 0) {
+                const errorDiv = document.getElementById('plan-msg-error');
+                errorDiv.textContent = "Debes añadir al menos una parada al plan.";
+                errorDiv.classList.remove('hidden');
+                return;
+            }
+
+            const btn = document.getElementById('btn-guardar-plan');
+            btn.textContent = "Guardando...";
+            btn.disabled = true;
+
+            const payload = {
+                nombrePlan: document.getElementById('plan-nombre').value.trim(),
+                descripcion: document.getElementById('plan-descripcion').value.trim(),
+                paradas: paradasAgregadas.map(p => ({
+                    comercioId: p.comercioId,
+                    recomendacion: p.recomendacion
+                }))
+            };
+
+            try {
+                const response = await fetch('/api/v1/planes', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (response.ok) {
+                    showToast("Plan creado exitosamente", "success");
+                    cerrarModalCrearPlan();
+                    setTimeout(() => window.location.reload(), 1000);
+                } else {
+                    const error = await response.json().catch(()=>({}));
+                    throw new Error(error.mensaje || "Error al crear el plan");
+                }
+            } catch (err) {
+                const errorDiv = document.getElementById('plan-msg-error');
+                errorDiv.textContent = err.message;
+                errorDiv.classList.remove('hidden');
+                btn.textContent = "Guardar Plan";
+                btn.disabled = false;
+            }
+        }
+        
+        function verParadas(planId) {
+            // Por simplicidad redirigimos al front publico o se podría hacer un modal.
+            window.open('/planes', '_blank');
+        }
+    </script>
+</body>
+</html>

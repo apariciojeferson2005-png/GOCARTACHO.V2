@@ -26,6 +26,26 @@ public class PlanController {
         return ResponseEntity.ok(comercios);
     }
 
+    /**
+     * Crea un nuevo plan con sus respectivas paradas (comercios).
+     * Solo administradores pueden crear planes.
+     */
+    @PostMapping
+    @org.springframework.security.access.prepost.PreAuthorize("hasRole('ADMIN')")
+    @org.springframework.web.bind.annotation.ResponseStatus(org.springframework.http.HttpStatus.CREATED)
+    public com.gocartacho.gocartacho.model.Plan crearPlan(
+            @jakarta.validation.Valid @RequestBody com.gocartacho.gocartacho.dto.CrearPlanDTO request,
+            org.springframework.security.core.Authentication authentication) {
+        
+        com.gocartacho.gocartacho.model.Plan planGuardado = planService.crearPlan(request);
+        
+        // Registrar acción en auditoría
+        // String adminName = authentication != null ? authentication.getName() : "Desconocido";
+        // auditoriaService.registrarAccion(adminName, "CREAR_PLAN", "PLAN", planGuardado.getPlanId(), "Plan creado: " + planGuardado.getNombrePlan());
+        
+        return planGuardado;
+    }
+
     @GetMapping("/afluencia")
     public ResponseEntity<Map<String, Integer>> getAfluenciaForPlanes(@RequestParam List<String> ids) {
         Map<String, Integer> afluenciaPorPlan = planService.calcularAfluenciaParaPlanes(ids);

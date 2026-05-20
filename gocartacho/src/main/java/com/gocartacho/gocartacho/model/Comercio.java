@@ -96,10 +96,10 @@ public class Comercio implements Serializable {
 
     // --- RELACIONES (MongoDB References) ---
 
-    @Field("zona_id")
+    @Field(value = "zona_id", targetType = org.springframework.data.mongodb.core.mapping.FieldType.OBJECT_ID)
     private String zonaId;
 
-    @Field("propietario_id")
+    @Field(value = "propietario_id", targetType = org.springframework.data.mongodb.core.mapping.FieldType.OBJECT_ID)
     private String propietarioId;
 
     @GeoSpatialIndexed(type = GeoSpatialIndexType.GEO_2DSPHERE)
