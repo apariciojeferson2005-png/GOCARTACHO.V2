@@ -4,6 +4,7 @@ let activeRouteLayers = [];
 let activeBusinessLayers = [];
 let zonaPolygons = {}; // zonaId -> Leaflet polygon layer
 let highlightComercioId = null;
+let zonasData = [];
 
 // ===== CUSTOM PREMIUM PIN ICON =====
 let customPinIcon = null;
@@ -187,6 +188,16 @@ document.addEventListener("DOMContentLoaded", async function () {
         } catch (e) {
             console.error("Error sincronizando sesión OAuth:", e);
         }
+    }
+
+    // Obtener los datos de las zonas para que no se rompan los clics en el mapa
+    try {
+        const rZonas = await fetch('/api/v1/zonas');
+        if (rZonas.ok) {
+            zonasData = await rZonas.json();
+        }
+    } catch (e) {
+        console.error("Error cargando zonasData", e);
     }
 
     gestionarBotones();
@@ -828,15 +839,16 @@ function initMap() {
                     };
                     const points = [];
                     comercios.forEach((c, i) => {
-                        const lat = c.latitud || (coordenadasFallback[c.id] ? coordenadasFallback[c.id][0] : null);
-                        const lng = c.longitud || (coordenadasFallback[c.id] ? coordenadasFallback[c.id][1] : null);
+                        const idComercio = c.comercioId || c.id;
+                        const lat = c.latitud || (coordenadasFallback[idComercio] ? coordenadasFallback[idComercio][0] : null);
+                        const lng = c.longitud || (coordenadasFallback[idComercio] ? coordenadasFallback[idComercio][1] : null);
                         if (lat && lng) {
                             points.push([lat, lng]);
                             const marker = L.marker([lat, lng], {
                                 icon: getCustomPinIcon()
                             }).addTo(map)
-                              .bindPopup(generarPopupComercio(c, `${i + 1}.`))
-                              .on('click', () => map.flyTo([lat, lng], 16, { duration: 0.8 }));
+                                .bindPopup(generarPopupComercio(c, `${i + 1}.`))
+                                .on('click', () => map.flyTo([lat, lng], 16, { duration: 0.8 }));
                             activeRouteLayers.push(marker);
                         }
                     });
@@ -857,8 +869,9 @@ function initMap() {
                     `;
 
                     comercios.forEach((c, i) => {
-                        const lat = c.latitud || (coordenadasFallback[c.id] ? coordenadasFallback[c.id][0] : null);
-                        const lng = c.longitud || (coordenadasFallback[c.id] ? coordenadasFallback[c.id][1] : null);
+                        const idComercio = c.comercioId || c.id;
+                        const lat = c.latitud || (coordenadasFallback[idComercio] ? coordenadasFallback[idComercio][0] : null);
+                        const lng = c.longitud || (coordenadasFallback[idComercio] ? coordenadasFallback[idComercio][1] : null);
 
                         let starsHtml = '';
                         const val = c.promedioCalificacion || 0;
@@ -870,7 +883,22 @@ function initMap() {
                             }
                         }
 
-                        const imgUrl = c.imagenUrl || `https://picsum.photos/seed/${c.nombre.replace(/\s+/g, '')}/400/220`;
+                        const indexImg = Math.abs((c.nombre || '').split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)) % 11;
+                        const listImgs = [
+                            "https://cdn.yate.co/img/blog/2023/1/plaza-santo-domingo-ctg-0psx640.jpg",
+                            "https://cdn.yate.co/img/blog/2023/1/getsemani-cartagena-zopx640.jpg",
+                            "https://cdn.yate.co/img/blog/2023/1/51-sky-bar-lv8x640.jpg",
+                            "https://cdn.yate.co/img/blog/2023/1/yate-de-noche-ctg-pntx640.jpg",
+                            "https://cdn.yate.co/img/blog/2023/1/cafe-del-mar-u4ox640.jpg",
+                            "https://cdn.yate.co/img/blog/2023/1/-wk8x640.jpg",
+                            "https://cdn.yate.co/img/blog/2023/1/-3zhx640.jpg",
+                            "https://cdn.yate.co/img/blog/2023/1/muralla-cartagena-2uhx640.jpg",
+                            "https://cdn.yate.co/img/blog/2023/1/chiva-rumbera-kfcx640.jpg",
+                            "https://cdn.yate.co/img/blog/2023/1/carruaje-av5x640.jpg",
+                            "https://cdn.yate.co/img/blog/2023/1/imagen-ppal-3dcx640.jpg"
+                        ];
+
+                        const imgUrl = c.imagenUrl || listImgs[indexImg];
                         const typeClass = `badge-${c.tipoNegocio || 'Otro'}`;
                         const typeName = c.tipoNegocio || 'Otro';
 
@@ -897,7 +925,7 @@ function initMap() {
 
                                 <div class="comercio-footer" onclick="event.stopPropagation();" style="margin-top:12px; padding-top:10px; border-top:1px solid rgba(196,113,74,0.08);">
                                     <div class="comercio-actions" style="display:flex; justify-content:space-between; align-items:center;">
-                                        <button class="btn-ver-resenas" onclick="abrirModalResenas('${c.id}', '${c.nombre.replace(/'/g, "\\'")}')" style="font-size:0.75rem; padding:6px 12px;">
+                                        <button class="btn-ver-resenas" onclick="abrirModalResenas('${idComercio}', '${c.nombre.replace(/'/g, "\\'")}')" style="font-size:0.75rem; padding:6px 12px;">
                                             <i class="fas fa-comments"></i> Opiniones
                                         </button>
                                         <div style="display:flex; gap:8px;">
@@ -1182,7 +1210,7 @@ function cargarComercios(id, nombre, colors) {
                     "https://cdn.yate.co/img/blog/2023/1/imagen-ppal-3dcx640.jpg"
                 ];
                 const cardImg = document.createElement('img');
-                cardImg.src = listImgs[indexImg];
+                cardImg.src = c.imagenUrl || listImgs[indexImg];
                 cardImg.alt = c.nombre;
                 cardImg.className = 'comercio-card-img';
                 cardImg.style.cssText = 'width: 100%; height: 110px; object-fit: cover; border-radius: 8px; margin-bottom: 10px;';
@@ -1194,8 +1222,8 @@ function cargarComercios(id, nombre, colors) {
                     marker = L.marker([c.latitud, c.longitud], {
                         icon: getCustomPinIcon()
                     }).addTo(map)
-                      .bindPopup(generarPopupComercio(c))
-                      .on('click', () => map.flyTo([c.latitud, c.longitud], 16, { duration: 0.8 }));
+                        .bindPopup(generarPopupComercio(c))
+                        .on('click', () => map.flyTo([c.latitud, c.longitud], 16, { duration: 0.8 }));
                     activeBusinessLayers.push(marker);
 
                     if (highlightComercioId && c.comercioId === highlightComercioId) {
@@ -1611,7 +1639,7 @@ function generarPopupComercio(c, prefix) {
         "https://cdn.yate.co/img/blog/2023/1/carruaje-av5x640.jpg",
         "https://cdn.yate.co/img/blog/2023/1/imagen-ppal-3dcx640.jpg"
     ];
-    const cardImg = listImgs[indexImg];
+    const cardImg = c.imagenUrl || listImgs[indexImg];
 
     const horarioHTML = c.horarioApertura && c.horarioCierre
         ? `<span><i class="fas fa-clock" style="color: var(--turquesa-caribe);"></i> ${formatHora(c.horarioApertura)} - ${formatHora(c.horarioCierre)}</span>`
@@ -1717,7 +1745,7 @@ function buscarComerciosGlobal(nombreBusqueda) {
                     ];
 
                     card.innerHTML = `
-                        <img src="${listImgs[indexImg]}" alt="${escapeHtml(c.nombre)}" class="comercio-card-img" style="width: 100%; height: 110px; object-fit: cover; border-radius: 8px; margin-bottom: 10px;" onerror="this.style.display='none'">
+                        <img src="${c.imagenUrl || listImgs[indexImg]}" alt="${escapeHtml(c.nombre)}" class="comercio-card-img" style="width: 100%; height: 110px; object-fit: cover; border-radius: 8px; margin-bottom: 10px;" onerror="this.style.display='none'">
                         <div style="display:flex; justify-content:space-between; align-items:flex-start;">
                             <div>
                                 <h4 style="margin:0 0 5px 0; font-size:1.1rem; color:var(--text-primary); font-family:var(--font-heading);">${escapeHtml(c.nombre)}</h4>
@@ -1739,8 +1767,8 @@ function buscarComerciosGlobal(nombreBusqueda) {
                         let marker = L.marker([c.latitud, c.longitud], {
                             icon: getCustomPinIcon()
                         }).addTo(map)
-                          .bindPopup(generarPopupComercio(c))
-                          .on('click', () => map.flyTo([c.latitud, c.longitud], 16, { duration: 0.8 }));
+                            .bindPopup(generarPopupComercio(c))
+                            .on('click', () => map.flyTo([c.latitud, c.longitud], 16, { duration: 0.8 }));
                         activeBusinessLayers.push(marker);
                     }
                 });

@@ -180,6 +180,46 @@ document.addEventListener("DOMContentLoaded", function () {
                 } catch (e) { }
             }
         }, 60000);
+
+        // --- INYECTAR BOTONES DE RECARGA EN CADA PANEL (REFRESH MANUAL) ---
+        document.querySelectorAll('.panel-card-header').forEach(header => {
+            if (!header.querySelector('.btn-refresh-table')) {
+                const btn = document.createElement('button');
+                btn.className = 'btn-refresh-table';
+                btn.innerHTML = '<i class="fas fa-sync-alt"></i>';
+                btn.title = 'Recargar tabla';
+                btn.style.cssText = 'background: rgba(0, 158, 227, 0.1); color: var(--primary-blue); border: none; border-radius: 8px; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s; margin-left: auto;';
+                
+                btn.onmouseover = () => {
+                    btn.style.background = 'var(--primary-blue)';
+                    btn.style.color = 'white';
+                    btn.style.boxShadow = '0 4px 10px rgba(0, 158, 227, 0.2)';
+                };
+                btn.onmouseout = () => {
+                    btn.style.background = 'rgba(0, 158, 227, 0.1)';
+                    btn.style.color = 'var(--primary-blue)';
+                    btn.style.boxShadow = 'none';
+                };
+                
+                btn.onclick = function (e) {
+                    e.preventDefault();
+                    const icon = this.querySelector('i');
+                    icon.classList.add('fa-spin'); // Agrega la animación de giro
+                    
+                    const panel = this.closest('.dashboard-panel-card');
+                    if (panel) {
+                        if (panel.querySelector('#pendientes-container') && typeof loadPendientes === 'function') loadPendientes(0);
+                        if (panel.querySelector('#activos-container') && typeof loadActivos === 'function') loadActivos(0);
+                        if (panel.querySelector('#promociones-container') && typeof loadPromociones === 'function') loadPromociones(0);
+                        if (panel.querySelector('#usuarios-container') && typeof loadUsuarios === 'function') loadUsuarios(0);
+                        if (panel.querySelector('#resenas-reportadas-container') && typeof loadResenasReportadas === 'function') loadResenasReportadas(0);
+                        if (panel.querySelector('#auditoria-container') && typeof loadAuditoria === 'function') loadAuditoria(0);
+                    }
+                    setTimeout(() => icon.classList.remove('fa-spin'), 800); // Detiene la animación
+                };
+                header.appendChild(btn);
+            }
+        });
     } catch (e) { window.location.href = '/login'; }
 });
 

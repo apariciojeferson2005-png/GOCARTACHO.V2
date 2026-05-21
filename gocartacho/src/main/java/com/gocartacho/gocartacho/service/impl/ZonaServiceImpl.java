@@ -25,8 +25,10 @@ public class ZonaServiceImpl implements ZonaService {
     private final AfluenciaHistoricaRepository afluenciaRepository;
 
     /**
-     * FIX N+1: En lugar de hacer una query a MongoDB por cada zona, se obtienen todos los registros
-     * de afluencia para todas las zonas en una sola consulta bulk y luego se mapean en memoria.
+     * FIX N+1: En lugar de hacer una query a MongoDB por cada zona, se obtienen
+     * todos los registros
+     * de afluencia para todas las zonas en una sola consulta bulk y luego se mapean
+     * en memoria.
      */
     @Override
     @Cacheable(value = "zonas_static", cacheManager = "longLivedCacheManager")
@@ -58,11 +60,14 @@ public class ZonaServiceImpl implements ZonaService {
                         (existing, replacement) -> existing // en caso de duplicados, conservar el primero
                 ));
 
-        // Enriquecer cada zona con su nivel de afluencia (lookup en memoria, sin más queries)
+        // Enriquecer cada zona con su nivel de afluencia (lookup en memoria, sin más
+        // queries)
         zonas.forEach(zona -> {
             Integer nivel = nivelPorZona.get(zona.getZonaId());
             if (nivel != null) {
                 zona.setNivelConcurrencia(nivel);
+            } else {
+                zona.setNivelConcurrencia(0); // Nivel Bajo por defecto (evita N/A en frontend)
             }
         });
 
@@ -71,7 +76,8 @@ public class ZonaServiceImpl implements ZonaService {
 
     @Override
     public Zona obtenerZonaPorId(String id) {
-        if (id == null) return null;
+        if (id == null)
+            return null;
 
         return zonaRepository.findById(id)
                 .map(this::enriquecerZonaConAfluencia)
@@ -80,24 +86,31 @@ public class ZonaServiceImpl implements ZonaService {
 
     @Override
     public Zona obtenerZonaPorNumero(Integer numero) {
-        if (numero == null) return null;
+        if (numero == null)
+            return null;
         return zonaRepository.findByNumero(numero)
                 .map(this::enriquecerZonaConAfluencia)
                 .orElse(null);
     }
 
-    /** Enriquece una zona individual con su afluencia (usado solo en obtenerZonaPorId). */
+    /**
+     * Enriquece una zona individual con su afluencia (usado solo en
+     * obtenerZonaPorId).
+     */
     private Zona enriquecerZonaConAfluencia(Zona zona) {
         LocalDateTime ahora = LocalDateTime.now();
         int horaActual = ahora.getHour();
         DiaSemana diaActual = mapearDiaSemana(ahora.getDayOfWeek());
 
         if (diaActual == null) {
+            zona.setNivelConcurrencia(0);
             return zona;
         }
 
-        afluenciaRepository.findByZonaIdAndDiaSemanaAndHora(zona.getZonaId(), diaActual, horaActual)
-                .ifPresent(afluencia -> zona.setNivelConcurrencia(afluencia.getNivelPromedio().ordinal()));
+        zona.setNivelConcurrencia(
+                afluenciaRepository.findByZonaIdAndDiaSemanaAndHora(zona.getZonaId(), diaActual, horaActual)
+                        .map(a -> a.getNivelPromedio().ordinal())
+                        .orElse(0));
 
         return zona;
     }
@@ -105,21 +118,30 @@ public class ZonaServiceImpl implements ZonaService {
     /** Convierte java.time.DayOfWeek (inglés) a DiaSemana (español). */
     private DiaSemana mapearDiaSemana(java.time.DayOfWeek dayOfWeek) {
         switch (dayOfWeek) {
-            case MONDAY:    return DiaSemana.Lunes;
-            case TUESDAY:   return DiaSemana.Martes;
-            case WEDNESDAY: return DiaSemana.Miércoles;
-            case THURSDAY:  return DiaSemana.Jueves;
-            case FRIDAY:    return DiaSemana.Viernes;
-            case SATURDAY:  return DiaSemana.Sábado;
-            case SUNDAY:    return DiaSemana.Domingo;
-            default:        return null;
+            case MONDAY:
+                return DiaSemana.Lunes;
+            case TUESDAY:
+                return DiaSemana.Martes;
+            case WEDNESDAY:
+                return DiaSemana.Miércoles;
+            case THURSDAY:
+                return DiaSemana.Jueves;
+            case FRIDAY:
+                return DiaSemana.Viernes;
+            case SATURDAY:
+                return DiaSemana.Sábado;
+            case SUNDAY:
+                return DiaSemana.Domingo;
+            default:
+                return null;
         }
     }
 
     @Override
     @Transactional
     public Zona guardarZona(Zona zona) {
-        if (zona == null) throw new IllegalArgumentException("La zona no puede ser nula.");
+        if (zona == null)
+            throw new IllegalArgumentException("La zona no puede ser nula.");
         return zonaRepository.save(zona);
     }
 
