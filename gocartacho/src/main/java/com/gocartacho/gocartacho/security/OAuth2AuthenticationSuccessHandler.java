@@ -94,10 +94,10 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
         org.springframework.http.ResponseCookie jwtCookie = org.springframework.http.ResponseCookie
                 .from("jwt", java.util.Objects.requireNonNull(token))
                 .httpOnly(true)
-                .secure(false) // Cambiar a true si usas HTTPS
+                .secure(true) // Render proxy termination requires this
                 .path("/")
                 .maxAge(24 * 60 * 60)
-                .sameSite("Strict") // Actualizado a Strict para bloquear ataques CSRF modernos
+                .sameSite("Lax") // Changed to Lax to avoid cross-origin redirect drops
                 .build();
 
         response.addHeader(org.springframework.http.HttpHeaders.SET_COOKIE, jwtCookie.toString());

@@ -102,10 +102,10 @@ public class UsuarioController {
 
             org.springframework.http.ResponseCookie jwtCookie = org.springframework.http.ResponseCookie.from("jwt", java.util.Objects.requireNonNull(token))
                     .httpOnly(true)
-                    .secure(request.isSecure())
+                    .secure(true)
                     .path("/")
                     .maxAge(24 * 60 * 60) // 1 día
-                    .sameSite("Strict")
+                    .sameSite("Lax")
                     .build();
             response.addHeader(org.springframework.http.HttpHeaders.SET_COOKIE, jwtCookie.toString());
 
@@ -127,10 +127,10 @@ public class UsuarioController {
         // Invalidar la cookie JWT en el cliente
         org.springframework.http.ResponseCookie expiredCookie = org.springframework.http.ResponseCookie.from("jwt", "")
                 .httpOnly(true)
-                .secure(request.isSecure())
+                .secure(true)
                 .path("/")
                 .maxAge(0)
-                .sameSite("Strict")
+                .sameSite("Lax")
                 .build();
         response.addHeader(org.springframework.http.HttpHeaders.SET_COOKIE, expiredCookie.toString());
         return ResponseEntity.noContent().build();
@@ -144,10 +144,10 @@ public class UsuarioController {
         // Renovar también la cookie httpOnly
         org.springframework.http.ResponseCookie jwtCookie = org.springframework.http.ResponseCookie.from("jwt", java.util.Objects.requireNonNull(newToken))
                 .httpOnly(true)
-                .secure(request.isSecure())
+                .secure(true)
                 .path("/")
                 .maxAge(24 * 60 * 60)
-                .sameSite("Strict")
+                .sameSite("Lax")
                 .build();
         response.addHeader(org.springframework.http.HttpHeaders.SET_COOKIE, jwtCookie.toString());
         return ResponseEntity.ok(Map.of("token", newToken));
