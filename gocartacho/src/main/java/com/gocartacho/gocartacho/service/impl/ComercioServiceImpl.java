@@ -112,8 +112,9 @@ public class ComercioServiceImpl implements ComercioService {
         }
 
         // Validar que las coordenadas correspondan a la zona seleccionada (Máximo 3 KM de distancia)
-        if (comercio.getZonaId() != null && comercio.getLatitud() != null && comercio.getLongitud() != null) {
-            zonaRepository.findById(comercio.getZonaId()).ifPresent(zona -> {
+        String zonaId = comercio.getZonaId();
+        if (zonaId != null && comercio.getLatitud() != null && comercio.getLongitud() != null) {
+            zonaRepository.findById(zonaId).ifPresent(zona -> {
                 double dist = calcularDistancia(
                     comercio.getLatitud().doubleValue(), comercio.getLongitud().doubleValue(),
                     zona.getLatitud().doubleValue(), zona.getLongitud().doubleValue()

@@ -182,7 +182,7 @@ function cargarNotificaciones() {
                 // Renderizar en el dashboard
                 if (dashboardNotifLista) {
                     if (!notifs || notifs.length === 0) {
-                        dashboardNotifLista.innerHTML = `<div class="empty-state" style="padding:40px 20px; text-align:center; color:var(--text-muted);"><i class="fas fa-bell-slash" style="font-size:3rem; margin-bottom:15px; opacity:0.5; color:var(--terracota);"></i><p>No tienes notificaciones en este momento.</p></div>`;
+                        dashboardNotifLista.innerHTML = `<div class="empty-state" style="padding:40px 20px; text-align:center; color:var(--text-muted);"><img src="/images/Tacho-Analiza-informacion.png" alt="Tacho" style="width:120px; opacity:0.8; margin-bottom:15px; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1)); animation: float 3s ease-in-out infinite;"><p style="font-weight:600; font-size:1.1rem; color:var(--text); margin-bottom:5px;">¡Todo al día!</p><p>Tacho no ha encontrado nuevas notificaciones para tu negocio.</p></div>`;
                         return;
                     }
 
@@ -882,7 +882,7 @@ function renderPromocionesList(promos) {
     }
     
     if (!promos || promos.length === 0) {
-        listDiv.innerHTML = `<div class="empty-state"><i class="fas fa-tag"></i> No tienes promociones publicadas. Ve a la pestaña "Crear Promoción" para publicar una.</div>`;
+        listDiv.innerHTML = `<div class="empty-state" style="padding:40px 20px; text-align:center; color:var(--text-muted);"><img src="/images/Tacho-Analiza-informacion.png" alt="Tacho" style="width:120px; opacity:0.8; margin-bottom:15px; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1)); animation: float 3s ease-in-out infinite;"><p style="font-weight:600; font-size:1.1rem; color:var(--text); margin-bottom:5px;">¡Anímate a publicar!</p><p>Aún no tienes promociones. Ve a la pestaña "Crear Promoción" para atraer turistas.</p></div>`;
         return;
     }
     listDiv.innerHTML = '';
@@ -935,7 +935,7 @@ function renderReviewsFeed(reviews) {
     const listDiv = document.getElementById('lista-opiniones-comercio');
 
     if (!reviews || reviews.length === 0) {
-        listDiv.innerHTML = `<div class="empty-state"><i class="fas fa-comment-slash"></i> Aún no has recibido opiniones de visitantes.</div>`;
+        listDiv.innerHTML = `<div class="empty-state" style="padding:40px 20px; text-align:center; color:var(--text-muted);"><img src="/images/Tacho-Analiza-informacion.png" alt="Tacho" style="width:120px; opacity:0.8; margin-bottom:15px; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1)); animation: float 3s ease-in-out infinite;"><p style="font-weight:600; font-size:1.1rem; color:var(--text); margin-bottom:5px;">Sin reseñas todavía</p><p>Sigue ofreciendo un gran servicio, pronto recibirás opiniones de tus visitantes.</p></div>`;
         return;
     }
 

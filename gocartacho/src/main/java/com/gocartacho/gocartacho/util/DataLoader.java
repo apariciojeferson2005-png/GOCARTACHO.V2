@@ -159,10 +159,19 @@ public class DataLoader implements CommandLineRunner {
     }
 
     private void inicializarComercios() {
-        // Lógica de reparación para comercios que ya existen pero no tienen ubicación o
-        // imagen
+        // Lógica de reparación para comercios que ya existen pero no tienen ubicación,
+        // imagen, o tienen zona_id huérfano (apuntando a un ObjectId que ya no existe)
         java.util.List<com.gocartacho.gocartacho.model.Comercio> existentes = comercioRepository.findAll();
         Usuario admin = usuarioRepository.findByUsername("admin").orElse(null);
+
+        // Cargar todas las zonas actuales para reparar zona_id huérfanos
+        java.util.List<com.gocartacho.gocartacho.model.Zona> zonasActuales = zonaRepository.findAll();
+        java.util.Set<String> zonaIdsValidos = new java.util.HashSet<>();
+        for (com.gocartacho.gocartacho.model.Zona z : zonasActuales) {
+            if (z.getZonaId() != null) {
+                zonaIdsValidos.add(z.getZonaId());
+            }
+        }
 
         for (com.gocartacho.gocartacho.model.Comercio c : existentes) {
             boolean modificado = false;
@@ -183,6 +192,32 @@ public class DataLoader implements CommandLineRunner {
                 c.setHorarioCierre(java.time.LocalTime.of(22, 0));
                 modificado = true;
             }
+
+            // Reparar zona_id huérfano: si es null o apunta a una zona que ya no existe,
+            // re-vincular al comercio con la zona geográficamente más cercana
+            boolean zonaHuerfana = c.getZonaId() == null || !zonaIdsValidos.contains(c.getZonaId());
+            if (zonaHuerfana && c.getLatitud() != null && c.getLongitud() != null && !zonasActuales.isEmpty()) {
+                com.gocartacho.gocartacho.model.Zona zonaCercana = null;
+                double menorDistancia = Double.MAX_VALUE;
+                for (com.gocartacho.gocartacho.model.Zona z : zonasActuales) {
+                    if (z.getLatitud() != null && z.getLongitud() != null) {
+                        double dist = calcularDistancia(
+                                c.getLatitud().doubleValue(), c.getLongitud().doubleValue(),
+                                z.getLatitud().doubleValue(), z.getLongitud().doubleValue());
+                        if (dist < menorDistancia) {
+                            menorDistancia = dist;
+                            zonaCercana = z;
+                        }
+                    }
+                }
+                if (zonaCercana != null) {
+                    log.info("Reparando zona_id huérfano para comercio '{}': viejo='{}' → nuevo='{}' (zona '{}')",
+                            c.getNombre(), c.getZonaId(), zonaCercana.getZonaId(), zonaCercana.getNombre());
+                    c.setZonaId(zonaCercana.getZonaId());
+                    modificado = true;
+                }
+            }
+
             if (modificado) {
                 comercioRepository.save(c);
             }
@@ -278,7 +313,7 @@ public class DataLoader implements CommandLineRunner {
         if (planComercioRepository.count() > 0) {
             log.info("Verificando consistencia de relaciones plan-comercio en la base de datos...");
             long planesValidos = planComercioRepository.findAll().stream()
-                .filter(pc -> pc.getPlanId() != null && planRepository.existsById(pc.getPlanId()))
+                .filter(pc -> pc.getPlanId() != null && planRepository.existsById(java.util.Objects.requireNonNull(pc.getPlanId())))
                 .count();
             if (planesValidos == 0) {
                 log.info("Se encontraron relaciones huérfanas (sin planes asociados). Limpiando para regenerar...");

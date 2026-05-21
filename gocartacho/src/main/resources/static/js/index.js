@@ -1859,5 +1859,29 @@ function cerrarPromptModal() {
     }
 }
 
+// ===== OFFLINE HANDLER (TACHO) =====
+window.addEventListener('offline', () => {
+    let offlineModal = document.getElementById('offline-modal-tacho');
+    if (!offlineModal) {
+        offlineModal = document.createElement('div');
+        offlineModal.id = 'offline-modal-tacho';
+        offlineModal.style.cssText = 'position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(10,25,41,0.95); z-index:999999; display:flex; flex-direction:column; align-items:center; justify-content:center; backdrop-filter:blur(10px); text-align:center; transition:opacity 0.3s ease;';
+        offlineModal.innerHTML = `
+            <img src="/images/Tacho_Sin-Internet.png" alt="Sin Internet" style="width:200px; filter:drop-shadow(0 0 20px rgba(255,255,255,0.1)); animation: float 4s ease-in-out infinite;">
+            <h2 style="color:white; font-family:\\'Montserrat\\', sans-serif; margin-top:20px; font-size:2rem;">¡Conexión Perdida!</h2>
+            <p style="color:var(--muted); font-size:1.1rem; max-width:400px; line-height:1.5;">Tacho no puede encontrar la señal de Internet. Por favor, revisa tu conexión para seguir explorando Cartagena.</p>
+        `;
+        document.body.appendChild(offlineModal);
+    } else {
+        offlineModal.style.display = 'flex';
+        offlineModal.style.opacity = '1';
+    }
+});
 
-
+window.addEventListener('online', () => {
+    const offlineModal = document.getElementById('offline-modal-tacho');
+    if (offlineModal) {
+        offlineModal.style.opacity = '0';
+        setTimeout(() => offlineModal.style.display = 'none', 300);
+    }
+});
