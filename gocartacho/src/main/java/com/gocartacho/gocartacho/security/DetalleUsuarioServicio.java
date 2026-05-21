@@ -30,14 +30,17 @@ public class DetalleUsuarioServicio implements UserDetailsService {
 
         boolean enabled = usuario.getEstado() == null || usuario.getEstado() == com.gocartacho.gocartacho.model.EstadoUsuario.ACTIVO;
 
+        String pwd = usuario.getContrasena() != null ? usuario.getContrasena() : "";
+        String roleName = usuario.getRol() != null ? usuario.getRol().name() : "USER";
+
         return new org.springframework.security.core.userdetails.User(
-                usuario.getEmail(),
-                usuario.getContrasena(),
+                usuario.getEmail() != null ? usuario.getEmail() : usuario.getUsername(),
+                pwd,
                 enabled,
                 true, // accountNonExpired
                 true, // credentialsNonExpired
                 true, // accountNonLocked
-                Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + usuario.getRol().name()))
+                Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + roleName))
         );
     }
 }
