@@ -12,7 +12,7 @@ public class EmailService {
 
     private final JavaMailSender mailSender;
 
-    @Value("${app.frontend.url:http://localhost:8081}")
+    @Value("${app.frontend.url:${APP_FRONTEND_URL:http://localhost:8080}}")
     private String frontendUrl;
 
     public void enviarCorreoRecuperacion(String destino, String token) {

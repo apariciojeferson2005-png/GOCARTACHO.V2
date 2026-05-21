@@ -30,7 +30,7 @@ public class TipoNegocioDataInitializer implements CommandLineRunner {
             List<TipoNegocio> tiposIniciales = List.of(
                 TipoNegocio.builder().nombre("Restaurante").descripcion("Establecimientos de comida y servicio a la mesa.").build(),
                 TipoNegocio.builder().nombre("Bar").descripcion("Lugares especializados en bebidas y entretenimiento nocturno.").build(),
-                TipoNegocio.builder().nombre("Cafeteria").descripcion("Locales para café, postres y snacks ligeros.").build(),
+                TipoNegocio.builder().nombre("Cafetería").descripcion("Locales para café, postres y snacks ligeros.").build(),
                 TipoNegocio.builder().nombre("Hotel").descripcion("Servicios de alojamiento y hospedaje.").build(),
                 TipoNegocio.builder().nombre("Tienda").descripcion("Comercios minoristas de diversos productos.").build(),
                 TipoNegocio.builder().nombre("Museo").descripcion("Espacios culturales e históricos.").build(),

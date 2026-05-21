@@ -94,18 +94,17 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
         org.springframework.http.ResponseCookie jwtCookie = org.springframework.http.ResponseCookie
                 .from("jwt", java.util.Objects.requireNonNull(token))
                 .httpOnly(true)
-                .secure(false) // Cambiar a true si usas HTTPS
+                .secure(request.isSecure()) // Automático: true en HTTPS (producción), false en HTTP (desarrollo)
                 .path("/")
                 .maxAge(24 * 60 * 60)
-                .sameSite("Strict") // Actualizado a Strict para bloquear ataques CSRF modernos
+                .sameSite("Lax") // Lax permite la redirección OAuth2 cross-site, Strict la bloquearía
                 .build();
 
         response.addHeader(org.springframework.http.HttpHeaders.SET_COOKIE, jwtCookie.toString());
-        log.info("Cookie 'jwt' añadida a la respuesta.");
+        log.info("Cookie 'jwt' añadida a la respuesta (secure={}).", request.isSecure());
 
-        // Redirige a /mapa con el token en la URL para que el JS lo guarde en
-        // localStorage
-        log.info("Redirigiendo a /mapa con token");
-        getRedirectStrategy().sendRedirect(request, response, "/mapa?token=" + token);
+        // Redirige a /mapa — el JWT ya viaja seguro en la cookie HttpOnly
+        log.info("Redirigiendo a /mapa");
+        getRedirectStrategy().sendRedirect(request, response, "/mapa");
     }
 }

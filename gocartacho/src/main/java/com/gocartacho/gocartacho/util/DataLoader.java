@@ -16,8 +16,8 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 @Slf4j
+@org.springframework.context.annotation.Profile("dev")
 public class DataLoader implements CommandLineRunner {
-
     private final UsuarioRepository usuarioRepository;
     private final com.gocartacho.gocartacho.repository.ZonaRepository zonaRepository;
     private final com.gocartacho.gocartacho.repository.ComercioRepository comercioRepository;
@@ -98,7 +98,7 @@ public class DataLoader implements CommandLineRunner {
             admin.setUsername("admin");
             admin.setEmail("admin@gocartacho.com");
             admin.setContrasena(password);
-            admin.setRol(RolUsuario.SUPER_ADMIN);
+            admin.setRol(RolUsuario.ADMIN);
             usuarioRepository.save(admin);
         }
 
