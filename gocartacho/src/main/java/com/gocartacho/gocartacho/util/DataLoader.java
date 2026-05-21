@@ -14,6 +14,7 @@ import org.springframework.stereotype.Component;
  * Se ejecuta automáticamente al arrancar la aplicación.
  */
 @Component
+@org.springframework.context.annotation.Profile("dev")
 @RequiredArgsConstructor
 @Slf4j
 public class DataLoader implements CommandLineRunner {
