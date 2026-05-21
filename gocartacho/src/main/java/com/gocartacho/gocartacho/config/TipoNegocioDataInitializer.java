@@ -9,6 +9,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 
 import java.util.List;
+import org.springframework.context.annotation.Profile;
 
 /**
  * Inicializador de datos para la tabla de Tipos de Negocio en MySQL.
@@ -18,6 +19,7 @@ import java.util.List;
 @Configuration
 @RequiredArgsConstructor
 @Order(1) // Ejecutar antes que el inicializador de MongoDB si es posible
+@Profile("dev")
 public class TipoNegocioDataInitializer implements CommandLineRunner {
 
     private final TipoNegocioService tipoNegocioService;
