@@ -1,0 +1,25 @@
+spring:
+  # ==========================================
+  # CONFIGURACIÓN MYSQL (JPA / Tipos de Negocio)
+  # ==========================================
+  datasource:
+    # Usa la variable de entorno MYSQL_URL si existe, si no, usa localhost
+    url: ${MYSQL_URL:jdbc:mysql://localhost:3306/gocartacho_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true}
+    # Usa la variable de entorno MYSQL_USERNAME si existe, si no, usa 'root'
+    username: ${MYSQL_USERNAME:root}
+    # Usa la variable de entorno MYSQL_PASSWORD si existe, si no, usa 'root'
+    password: ${MYSQL_PASSWORD:root}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+
+  # ==========================================
+  # CONFIGURACIÓN MONGODB (Usuarios, Comercios, etc.)
+  # ==========================================
+  data:
+    mongodb:
+      # Usa la variable de entorno MONGO_URI si existe (PRODUCCIÓN - Atlas), si no, usa localhost (DESARROLLO)
+      uri: ${MONGO_URI:mongodb://localhost:27017/gocartacho_db}
