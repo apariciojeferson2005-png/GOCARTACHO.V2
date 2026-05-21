@@ -30,6 +30,6 @@ public class AfluenciaHistorica {
     @Field("nivel_promedio")
     private NivelAfluencia nivelPromedio;
 
-    @Field("zona_id")
+    @Field(value = "zona_id", targetType = org.springframework.data.mongodb.core.mapping.FieldType.OBJECT_ID)
     private String zonaId;
 }
